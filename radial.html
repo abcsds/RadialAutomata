@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radial Cellular Automata</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="radial.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: monospace;
+      background-color: #f0f0f0;
+    }
+    #header {
+      text-align: center;
+      margin-bottom: 20px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #header h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      color: #333;
+    }
+    #header p {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+    }
+    #main-content {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    #canvas-container {
+      flex-shrink: 0;
+    }
+    #statistics {
+      width: 350px;
+      padding: 15px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    #statistics h3 {
+      margin-top: 0;
+    }
+    .stat-row {
+      padding: 3px 0;
+      font-size: 12px;
+    }
+    #controls {
+      width: 350px;
+      padding: 15px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      flex-shrink: 0;
+      margin-top: 20px;
+    }
+    #controls h3 {
+      margin-top: 0;
+    }
+    .control-group {
+      margin-bottom: 12px;
+    }
+    .control-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .control-group input, .control-group textarea {
+      width: 100%;
+      padding: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+    .control-group textarea {
+      resize: vertical;
+      min-height: 40px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>Radial Cellular Automata Generator</h1>
+    <h2><a href="https://abcsds.github.io">Xiutik</a></h2>
+    <p>Generate circular patterns using cellular automata for crochet in the round</p>
+  </div>
+  <div id="main-content">
+    <div id="canvas-container"></div>
+    <div>
+    <div id="statistics">
+      <h3>Pattern Statistics</h3>
+      <div id="stats-content">Generating...</div>
+    </div>
+    <div id="controls">
+      <h3>Controls</h3>
+      <div class="control-group">
+        <label>Initial Cell Count:</label>
+        <input type="number" id="initialCellCount" min="3" max="50" value="9" title="Number of cells in the first/innermost ring">
+      </div>
+      <div class="control-group">
+        <label>Number of Rings:</label>
+        <input type="number" id="numRings" min="5" max="100" value="20" title="Total number of concentric rings to generate">
+      </div>
+      <div class="control-group">
+        <label>Expansion Interval:</label>
+        <input type="number" id="expansionInterval" min="2" max="20" value="5" title="Add one expansion cell every N cells as rings grow. Expansion cells copy their parent's value without applying CA rules.">
+      </div>
+      <div class="control-group">
+        <label>Start Radius:</label>
+        <input type="number" id="startRadius" min="10" max="200" value="40" title="Radius in pixels of the first/innermost ring from the center">
+      </div>
+      <div class="control-group">
+        <label>Ring Spacing:</label>
+        <input type="number" id="ringSpacing" min="5" max="50" value="25" title="Distance in pixels between consecutive rings">
+      </div>
+      <div class="control-group">
+        <label>Cell Size:</label>
+        <input type="number" id="cellSize" min="2" max="40" value="20" title="Diameter in pixels of each cell circle">
+      </div>
+      <div class="control-group">
+        <label>Ruleset (8 bits, e.g., "01011010" for Rule 90):</label>
+        <input type="text" id="ruleset" value="01011010" maxlength="8" title="8-bit binary string defining the cellular automaton rule. Each bit corresponds to the next state for neighborhood patterns 111, 110, 101, 100, 011, 010, 001, 000.">
+      </div>
+      <div class="control-group">
+        <label>Initial Pattern (comma-separated 0s and 1s):</label>
+        <textarea id="initialPattern" placeholder="e.g., 1,0,1,0,1,0,1,0,1" title="Starting pattern for the first ring as comma-separated binary values (0=white, 1=black). Will repeat or truncate to match Initial Cell Count.">1,0,1,0,1,0,1,0,1</textarea>
+      </div>
+      <button onclick="restartSimulation()">Restart Simulation</button>
+    </div>
+    </div>
+  </div>
+</body>
+</html>
