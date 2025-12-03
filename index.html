@@ -108,7 +108,7 @@
   <div id="header">
     <h1>Radial Cellular Automata Generator</h1>
     <h2><a href="https://abcsds.github.io">Xiutik</a></h2>
-    <p>Generate circular patterns using cellular automata for crochet in the round</p>
+    <p>Generate circular patterns using cellular automata for crocheing, or crafting in the round</p>
   </div>
   <div id="main-content">
     <div id="canvas-container"></div>
@@ -121,15 +121,18 @@
       <h3>Controls</h3>
       <div class="control-group">
         <label>Initial Cell Count:</label>
-        <input type="number" id="initialCellCount" min="3" max="50" value="9" title="Number of cells in the first/innermost ring">
+        <input type="number" id="initialCellCount" min="3" max="50" value="8" onchange="onInitialParametersChange()" title="Number of cells in the first/innermost ring">
       </div>
       <div class="control-group">
         <label>Number of Rings:</label>
-        <input type="number" id="numRings" min="5" max="100" value="20" title="Total number of concentric rings to generate">
+        <input type="number" id="numRings" min="5" max="100" value="15" onchange="onInitialParametersChange()" title="Total number of concentric rings to generate">
       </div>
       <div class="control-group">
-        <label>Expansion Interval:</label>
-        <input type="number" id="expansionInterval" min="2" max="20" value="5" title="Add one expansion cell every N cells as rings grow. Expansion cells copy their parent's value without applying CA rules.">
+        <label>Expansion Intervals (per ring):</label>
+        <div id="expansion-intervals-container" style="margin-top: 5px;">
+          <!-- Dynamic expansion interval dropdowns will be inserted here -->
+        </div>
+        <p style="font-size: 10px; color: #666; margin-top: 5px; margin-bottom: 0;">Each ring expands by adding cells at regular intervals based on divisors of the previous ring's cell count. This ensures symmetric expansion.</p>
       </div>
       <div class="control-group">
         <label>Start Radius:</label>
@@ -155,5 +158,21 @@
     </div>
     </div>
   </div>
+  <script>
+    // Initialize expansion interval controls when page loads
+    window.addEventListener('load', function() {
+      // Give p5.js time to initialize
+      setTimeout(function() {
+        // Initialize expansion intervals with defaults from radial.js
+        if (typeof initializeExpansionIntervals === 'function') {
+          initializeExpansionIntervals();
+        }
+        // Update the UI to show the dropdowns
+        if (typeof updateExpansionIntervalControls === 'function') {
+          updateExpansionIntervalControls();
+        }
+      }, 100);
+    });
+  </script>
 </body>
 </html>

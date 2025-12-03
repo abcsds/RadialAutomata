@@ -1,10 +1,60 @@
 // Radial grid parameters
 let initialCellCount = 8; // Number of cells in the first ring
 let numRings = 15; // Total number of rings to generate
-let expansionInterval = 5; // Add expansion cell every N cells
+let expansionIntervals = []; // Array of expansion intervals, one per ring
 
 // Cellular automata parameters
 let ruleset = [0, 1, 0, 1, 1, 0, 1, 0]; // Rule 90
+
+// Helper function to get all divisors of a number
+function getDivisors(n) {
+  let divisors = [];
+  for (let i = 1; i <= Math.sqrt(n); i++) {
+    if (n % i === 0) {
+      divisors.push(i);
+      if (i !== n / i) {
+        divisors.push(n / i);
+      }
+    }
+  }
+  return divisors.sort((a, b) => a - b);
+}
+
+// Get default expansion interval for spherical curvature (κ ≈ 0.5-0.6)
+// This creates a natural bowl/dome shape, perfect for crochet hats, bowls, and amigurumi
+function getDefaultExpansionInterval(cellCount) {
+  let divisors = getDivisors(cellCount);
+  let validDivisors = divisors.filter(d => d > 1);
+  
+  // If only prime (no divisors except 1 and itself), use the number itself
+  if (validDivisors.length === 0) {
+    return cellCount;
+  }
+  
+  // For spherical curvature (κ ≈ 0.5), choose from upper 60% of divisors
+  // This creates less expansion = bowl/dome shape (positive curvature)
+  // Lower divisors = more expansion = hyperbolic (negative curvature)
+  // Higher divisors = less expansion = spherical (positive curvature)
+  let targetIndex = Math.floor(validDivisors.length * 0.6); // 60% through the list
+  targetIndex = Math.max(0, Math.min(validDivisors.length - 1, targetIndex));
+  
+  return validDivisors[targetIndex];
+}
+
+// Initialize expansion intervals with defaults
+function initializeExpansionIntervals() {
+  expansionIntervals = [];
+  let currentCellCount = initialCellCount;
+  
+  for (let r = 0; r < numRings - 1; r++) {
+    let interval = getDefaultExpansionInterval(currentCellCount);
+    expansionIntervals[r] = interval;
+    
+    // Calculate next ring's cell count
+    let expansionCount = Math.floor(currentCellCount / interval);
+    currentCellCount = currentCellCount + expansionCount;
+  }
+}
 
 // Data structures
 let rings = []; // 2D array: rings[ringIndex][cellIndex]
@@ -32,6 +82,11 @@ function initializeSimulation() {
   rings = [];
   expansionMap = [];
   
+  // Initialize expansion intervals if not already set
+  if (expansionIntervals.length === 0) {
+    initializeExpansionIntervals();
+  }
+  
   // Initialize first ring with the initial pattern
   rings[0] = initialPattern.slice(0, initialCellCount);
   // Pad with zeros if pattern is shorter than initialCellCount
@@ -40,9 +95,10 @@ function initializeSimulation() {
   }
   expansionMap[0] = new Array(initialCellCount).fill(false);
   
-  // Pre-calculate all ring structures
+  // Pre-calculate all ring structures using variable expansion intervals
   for (let r = 1; r < numRings; r++) {
     let prevCount = rings[r - 1].length;
+    let expansionInterval = expansionIntervals[r - 1] || prevCount; // Use specific interval for this ring
     let expansionCount = floor(prevCount / expansionInterval);
     let newCount = prevCount + expansionCount;
     
@@ -183,10 +239,18 @@ function restartSimulation() {
   // Read values from controls
   initialCellCount = parseInt(document.getElementById('initialCellCount').value);
   numRings = parseInt(document.getElementById('numRings').value);
-  expansionInterval = parseInt(document.getElementById('expansionInterval').value);
   startRadius = parseInt(document.getElementById('startRadius').value);
   ringSpacing = parseInt(document.getElementById('ringSpacing').value);
   cellSize = parseInt(document.getElementById('cellSize').value);
+  
+  // Read expansion intervals from dropdowns
+  expansionIntervals = [];
+  for (let r = 0; r < numRings - 1; r++) {
+    let dropdown = document.getElementById('expansionInterval_' + r);
+    if (dropdown) {
+      expansionIntervals[r] = parseInt(dropdown.value);
+    }
+  }
   
   // Parse ruleset
   let rulesetStr = document.getElementById('ruleset').value;
@@ -214,4 +278,103 @@ function restartSimulation() {
   // Restart simulation - call initializeSimulation first, then loop
   initializeSimulation();
   loop();
+}
+
+// Update expansion interval dropdowns based on current parameters
+function updateExpansionIntervalControls() {
+  let container = document.getElementById('expansion-intervals-container');
+  if (!container) return;
+  
+  // Calculate cell counts for each ring
+  let cellCounts = [initialCellCount];
+  for (let r = 0; r < numRings - 1; r++) {
+    let prevCount = cellCounts[r];
+    let interval = expansionIntervals[r] || getDefaultExpansionInterval(prevCount);
+    let expansionCount = Math.floor(prevCount / interval);
+    cellCounts.push(prevCount + expansionCount);
+  }
+  
+  // Generate HTML for expansion interval controls
+  let html = '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 3px;">';
+  
+  for (let r = 0; r < numRings - 1; r++) {
+    let prevCount = cellCounts[r];
+    let divisors = getDivisors(prevCount);
+    let currentValue = expansionIntervals[r] || getDefaultExpansionInterval(prevCount);
+    
+    html += '<div style="margin-bottom: 8px;">';
+    html += '<label style="font-size: 11px; display: block; margin-bottom: 2px;">Ring ' + (r + 1) + ' → ' + (r + 2) + ' (' + prevCount + ' cells):</label>';
+    html += '<select id="expansionInterval_' + r + '" style="width: 100%; padding: 3px; font-size: 11px;" onchange="onExpansionIntervalChange(' + r + ')">';
+    
+    for (let d of divisors) {
+      if (d > 1 || divisors.length === 1) { // Include divisors > 1, or include 1 if it's the only option
+        let selected = (d === currentValue) ? ' selected' : '';
+        let nextCount = prevCount + Math.floor(prevCount / d);
+        html += '<option value="' + d + '"' + selected + '>' + d + ' (→ ' + nextCount + ' cells)</option>';
+      }
+    }
+    
+    html += '</select></div>';
+  }
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// Handle change in expansion interval dropdown
+function onExpansionIntervalChange(ringIndex) {
+  let dropdown = document.getElementById('expansionInterval_' + ringIndex);
+  if (dropdown) {
+    expansionIntervals[ringIndex] = parseInt(dropdown.value);
+    
+    // Recalculate subsequent rings and update their dropdowns
+    let cellCounts = [initialCellCount];
+    for (let r = 0; r < numRings - 1; r++) {
+      let prevCount = cellCounts[r];
+      let interval = expansionIntervals[r] || getDefaultExpansionInterval(prevCount);
+      let expansionCount = Math.floor(prevCount / interval);
+      cellCounts.push(prevCount + expansionCount);
+    }
+    
+    // Update dropdowns for subsequent rings
+    for (let r = ringIndex + 1; r < numRings - 1; r++) {
+      let prevCount = cellCounts[r];
+      let divisors = getDivisors(prevCount);
+      let dropdown = document.getElementById('expansionInterval_' + r);
+      
+      if (dropdown) {
+        let currentValue = parseInt(dropdown.value);
+        let newValue = currentValue;
+        
+        // If current value is not a valid divisor, use default
+        if (!divisors.includes(currentValue)) {
+          newValue = getDefaultExpansionInterval(prevCount);
+        }
+        
+        // Rebuild dropdown options
+        let html = '';
+        for (let d of divisors) {
+          if (d > 1 || divisors.length === 1) {
+            let selected = (d === newValue) ? ' selected' : '';
+            let nextCount = prevCount + Math.floor(prevCount / d);
+            html += '<option value="' + d + '"' + selected + '>' + d + ' (→ ' + nextCount + ' cells)</option>';
+          }
+        }
+        dropdown.innerHTML = html;
+        expansionIntervals[r] = newValue;
+      }
+    }
+  }
+}
+
+// Update controls when initial parameters change
+function onInitialParametersChange() {
+  initialCellCount = parseInt(document.getElementById('initialCellCount').value);
+  numRings = parseInt(document.getElementById('numRings').value);
+  
+  // Reinitialize expansion intervals with defaults
+  initializeExpansionIntervals();
+  
+  // Update the UI
+  updateExpansionIntervalControls();
 }
