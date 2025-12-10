@@ -1,6 +1,6 @@
 // Radial grid parameters
-let initialCellCount = 8; // Number of cells in the first ring
-let numRings = 15; // Total number of rings to generate
+let initialCellCount = 16; // Number of cells in the first ring
+let numRings = 20; // Total number of rings to generate
 let expansionIntervals = []; // Array of expansion intervals, one per ring
 
 // Cellular automata parameters
@@ -42,12 +42,24 @@ function getDefaultExpansionInterval(cellCount) {
 }
 
 // Initialize expansion intervals with defaults
+// Start with 2, then increment: 2, 3, 4, 5, 6, etc.
+// This creates a circular/spherical expansion pattern
 function initializeExpansionIntervals() {
   expansionIntervals = [];
   let currentCellCount = initialCellCount;
   
   for (let r = 0; r < numRings - 1; r++) {
-    let interval = getDefaultExpansionInterval(currentCellCount);
+    // Start with interval 2, increment by 1 each ring
+    let interval = 2 + r;
+    
+    // Make sure interval doesn't exceed cell count
+    // If it does, use a valid divisor
+    if (interval > currentCellCount) {
+      let divisors = getDivisors(currentCellCount);
+      let validDivisors = divisors.filter(d => d > 1);
+      interval = validDivisors.length > 0 ? validDivisors[validDivisors.length - 1] : currentCellCount;
+    }
+    
     expansionIntervals[r] = interval;
     
     // Calculate next ring's cell count
@@ -63,10 +75,10 @@ let expansionMap = []; // Tracks which cells are expansions
 // Visual parameters
 let centerX, centerY;
 let startRadius = 40; // Radius of first ring
-let ringSpacing = 25; // Distance between rings
+let ringSpacing = 20; // Distance between rings
 let cellSize = 20; // Diameter of cell circles
 let currentRing = 0; // Current generation
-let initialPattern = [1, 0, 1, 0, 1, 0, 1, 0]; // Initial pattern
+let initialPattern = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Initial pattern (all ones)
 
 function setup() {
   let canvas = createCanvas(1000, 1000);
