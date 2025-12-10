@@ -312,6 +312,15 @@ function updateColors() {
   }
 }
 
+// Update binary representation when rule number changes
+function updateRuleBinary() {
+  let ruleNumber = parseInt(document.getElementById('ruleNumber').value);
+  if (ruleNumber >= 0 && ruleNumber <= 255) {
+    let binary = ruleNumber.toString(2).padStart(8, '0');
+    document.getElementById('ruleBinary').textContent = binary;
+  }
+}
+
 function restartSimulation() {
   // Read values from controls
   initialCellCount = parseInt(document.getElementById('initialCellCount').value);
@@ -329,10 +338,11 @@ function restartSimulation() {
     }
   }
   
-  // Parse ruleset
-  let rulesetStr = document.getElementById('ruleset').value;
-  if (rulesetStr.length === 8) {
-    ruleset = rulesetStr.split('').map(bit => parseInt(bit));
+  // Parse ruleset from rule number
+  let ruleNumber = parseInt(document.getElementById('ruleNumber').value);
+  if (ruleNumber >= 0 && ruleNumber <= 255) {
+    let binary = ruleNumber.toString(2).padStart(8, '0');
+    ruleset = binary.split('').map(bit => parseInt(bit));
   }
   
   // Parse initial pattern

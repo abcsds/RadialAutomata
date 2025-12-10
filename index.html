@@ -161,8 +161,10 @@
         <input type="number" id="cellSize" min="2" max="40" value="20" title="Diameter in pixels of each cell circle">
       </div>
       <div class="control-group">
-        <label>Ruleset (8 bits, e.g., "01011010" for Rule 90):</label>
-        <input type="text" id="ruleset" value="01011010" maxlength="8" title="8-bit binary string defining the cellular automaton rule. Each bit corresponds to the next state for neighborhood patterns 111, 110, 101, 100, 011, 010, 001, 000.">
+        <label>Ruleset (0-255):</label>
+        <input type="number" id="ruleNumber" min="0" max="255" value="90" oninput="updateRuleBinary()" title="Cellular automaton rule number (0-255). Rule 90 is a common example.">
+        <div style="font-size: 11px; color: #666; margin-top: 4px;">Binary: <span id="ruleBinary" style="font-family: monospace; color: #333;">01011010</span></div>
+        <div style="font-size: 10px; color: #888; margin-top: 2px;">Patterns: 111, 110, 101, 100, 011, 010, 001, 000</div>
       </div>
       <div class="control-group">
         <label>Initial Pattern (comma-separated 0s and 1s):</label>
