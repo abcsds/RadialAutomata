@@ -80,6 +80,10 @@ let cellSize = 20; // Diameter of cell circles
 let currentRing = 0; // Current generation
 let initialPattern = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Initial pattern (all ones)
 
+// Color parameters
+let color0 = '#FFFFFF'; // Color for state 0 (white by default)
+let color1 = '#000000'; // Color for state 1 (black by default)
+
 function setup() {
   let canvas = createCanvas(1000, 1000);
   canvas.parent('canvas-container');
@@ -181,9 +185,9 @@ function draw() {
     let y = centerY + radius * sin(angle);
     
     if (rings[currentRing][i] === 1) {
-      fill(0);
+      fill(color1);
     } else {
-      fill(255);
+      fill(color0);
     }
     circle(x, y, cellSize);
   }
@@ -245,6 +249,67 @@ function updateStatistics() {
   
   statsHTML += '</div>';
   document.getElementById('stats-content').innerHTML = statsHTML;
+}
+
+// Update colors immediately when color pickers change
+function updateColors() {
+  color0 = document.getElementById('color0').value;
+  color1 = document.getElementById('color1').value;
+  
+  // Redraw all rings with new colors
+  background(127);
+  
+  for (let r = 0; r < rings.length; r++) {
+    let radius = startRadius + r * ringSpacing;
+    let cellCount = rings[r].length;
+    
+    // Draw concentric circle guide (very light)
+    stroke(220);
+    strokeWeight(0.5);
+    noFill();
+    circle(centerX, centerY, radius * 2);
+    
+    // Draw radial lines from previous ring to current ring (non-expansion points only)
+    if (r > 0) {
+      stroke(150);
+      strokeWeight(1);
+      
+      let prevRadius = startRadius + (r - 1) * ringSpacing;
+      let prevCount = rings[r - 1].length;
+      
+      let prevIndex = 0;
+      for (let i = 0; i < cellCount; i++) {
+        if (!expansionMap[r][i]) {
+          let angle1 = (TWO_PI / prevCount) * prevIndex;
+          let x1 = centerX + prevRadius * cos(angle1);
+          let y1 = centerY + prevRadius * sin(angle1);
+          
+          let angle2 = (TWO_PI / cellCount) * i;
+          let x2 = centerX + radius * cos(angle2);
+          let y2 = centerY + radius * sin(angle2);
+          
+          line(x1, y1, x2, y2);
+          prevIndex++;
+        }
+      }
+    }
+    
+    // Draw circles for each cell with updated colors
+    stroke(150);
+    strokeWeight(1);
+    for (let i = 0; i < cellCount; i++) {
+      let angle = (TWO_PI / cellCount) * i;
+      let x = centerX + radius * cos(angle);
+      let y = centerY + radius * sin(angle);
+      
+      if (rings[r][i] === 1) {
+        fill(color1);
+      } else {
+        fill(color0);
+      }
+      circle(x, y, cellSize);
+    }
+  }
 }
 
 function restartSimulation() {

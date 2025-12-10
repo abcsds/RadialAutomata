@@ -109,6 +109,16 @@
     <h1>Radial Cellular Automata Generator</h1>
     <h2><a href="https://abcsds.github.io">Xiutik</a></h2>
     <p>Generate circular patterns using cellular automata for crocheing, or crafting in the round</p>
+    <div style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-size: 14px; font-weight: bold;">Color for State 0:</label>
+        <input type="color" id="color0" value="#FFFFFF" onchange="updateColors()" style="width: 60px; height: 35px; cursor: pointer; border: 2px solid #ccc; border-radius: 4px;" title="Color for cells in state 0">
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-size: 14px; font-weight: bold;">Color for State 1:</label>
+        <input type="color" id="color1" value="#000000" onchange="updateColors()" style="width: 60px; height: 35px; cursor: pointer; border: 2px solid #ccc; border-radius: 4px;" title="Color for cells in state 1">
+      </div>
+    </div>
   </div>
   <div id="main-content">
     <div id="canvas-container"></div>
