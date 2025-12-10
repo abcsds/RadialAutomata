@@ -83,6 +83,7 @@ let initialPattern = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Initia
 // Color parameters
 let color0 = '#FFFFFF'; // Color for state 0 (white by default)
 let color1 = '#000000'; // Color for state 1 (black by default)
+let colorBackground = '#7F7F7F'; // Background color (gray by default)
 
 function setup() {
   let canvas = createCanvas(1000, 1000);
@@ -91,7 +92,7 @@ function setup() {
 }
 
 function initializeSimulation() {
-  background(127);
+  background(colorBackground);
   centerX = width / 2;
   centerY = height / 2;
   currentRing = 0;
@@ -177,8 +178,7 @@ function draw() {
   }
   
   // Draw circles for each cell
-  stroke(150);
-  strokeWeight(1);
+  noStroke();
   for (let i = 0; i < cellCount; i++) {
     let angle = (TWO_PI / cellCount) * i;
     let x = centerX + radius * cos(angle);
@@ -255,9 +255,10 @@ function updateStatistics() {
 function updateColors() {
   color0 = document.getElementById('color0').value;
   color1 = document.getElementById('color1').value;
+  colorBackground = document.getElementById('colorBackground').value;
   
   // Redraw all rings with new colors
-  background(127);
+  background(colorBackground);
   
   for (let r = 0; r < rings.length; r++) {
     let radius = startRadius + r * ringSpacing;
@@ -295,8 +296,7 @@ function updateColors() {
     }
     
     // Draw circles for each cell with updated colors
-    stroke(150);
-    strokeWeight(1);
+    noStroke();
     for (let i = 0; i < cellCount; i++) {
       let angle = (TWO_PI / cellCount) * i;
       let x = centerX + radius * cos(angle);
