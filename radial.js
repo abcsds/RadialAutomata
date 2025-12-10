@@ -318,6 +318,11 @@ function updateExpansionIntervalControls() {
     html += '<label style="font-size: 11px; display: block; margin-bottom: 2px;">Ring ' + (r + 1) + ' → ' + (r + 2) + ' (' + prevCount + ' cells):</label>';
     html += '<select id="expansionInterval_' + r + '" style="width: 100%; padding: 3px; font-size: 11px;" onchange="onExpansionIntervalChange(' + r + ')">';
     
+    // Always include interval=1 option (doubles the cell count)
+    let selected1 = (1 === currentValue) ? ' selected' : '';
+    let nextCount1 = prevCount + Math.floor(prevCount / 1);
+    html += '<option value="1"' + selected1 + '>1 (→ ' + nextCount1 + ' cells)</option>';
+    
     for (let d of divisors) {
       if (d > 1 || divisors.length === 1) { // Include divisors > 1, or include 1 if it's the only option
         let selected = (d === currentValue) ? ' selected' : '';
@@ -358,13 +363,19 @@ function onExpansionIntervalChange(ringIndex) {
         let currentValue = parseInt(dropdown.value);
         let newValue = currentValue;
         
-        // If current value is not a valid divisor, use default
-        if (!divisors.includes(currentValue)) {
+        // If current value is not a valid divisor (and not 1), use default
+        if (currentValue !== 1 && !divisors.includes(currentValue)) {
           newValue = getDefaultExpansionInterval(prevCount);
         }
         
         // Rebuild dropdown options
         let html = '';
+        
+        // Always include interval=1 option first
+        let selected1 = (1 === newValue) ? ' selected' : '';
+        let nextCount1 = prevCount + Math.floor(prevCount / 1);
+        html += '<option value="1"' + selected1 + '>1 (→ ' + nextCount1 + ' cells)</option>';
+        
         for (let d of divisors) {
           if (d > 1 || divisors.length === 1) {
             let selected = (d === newValue) ? ' selected' : '';
