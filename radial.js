@@ -476,3 +476,75 @@ function onInitialParametersChange() {
   // Update the UI
   updateExpansionIntervalControls();
 }
+
+// Download canvas as SVG
+function downloadSVG() {
+  // Create SVG header
+  let svgWidth = width;
+  let svgHeight = height;
+  let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+  svg += '<svg xmlns="http://www.w3.org/2000/svg" ';
+  svg += 'width="' + svgWidth + '" height="' + svgHeight + '" ';
+  svg += 'viewBox="0 0 ' + svgWidth + ' ' + svgHeight + '">\n';
+  
+  // Add background
+  svg += '<rect width="' + svgWidth + '" height="' + svgHeight + '" fill="' + colorBackground + '"/>\n';
+  
+  // Draw all rings
+  for (let r = 0; r < rings.length; r++) {
+    let radius = startRadius + r * ringSpacing;
+    let cellCount = rings[r].length;
+    
+    // Draw concentric circle guide (very light)
+    svg += '<circle cx="' + centerX + '" cy="' + centerY + '" r="' + radius + '" ';
+    svg += 'fill="none" stroke="#DCDCDC" stroke-width="0.5"/>\n';
+    
+    // Draw radial lines from previous ring to current ring
+    if (r > 0) {
+      let prevRadius = startRadius + (r - 1) * ringSpacing;
+      let prevCount = rings[r - 1].length;
+      
+      let prevIndex = 0;
+      for (let i = 0; i < cellCount; i++) {
+        if (!expansionMap[r][i]) {
+          let angle1 = (Math.PI * 2 / prevCount) * prevIndex;
+          let x1 = centerX + prevRadius * Math.cos(angle1);
+          let y1 = centerY + prevRadius * Math.sin(angle1);
+          
+          let angle2 = (Math.PI * 2 / cellCount) * i;
+          let x2 = centerX + radius * Math.cos(angle2);
+          let y2 = centerY + radius * Math.sin(angle2);
+          
+          svg += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" ';
+          svg += 'stroke="#969696" stroke-width="1"/>\n';
+          prevIndex++;
+        }
+      }
+    }
+    
+    // Draw circles for each cell
+    for (let i = 0; i < cellCount; i++) {
+      let angle = (Math.PI * 2 / cellCount) * i;
+      let x = centerX + radius * Math.cos(angle);
+      let y = centerY + radius * Math.sin(angle);
+      
+      let fillColor = rings[r][i] === 1 ? color1 : color0;
+      svg += '<circle cx="' + x + '" cy="' + y + '" r="' + (cellSize / 2) + '" ';
+      svg += 'fill="' + fillColor + '"/>\n';
+    }
+  }
+  
+  // Close SVG
+  svg += '</svg>';
+  
+  // Create download link
+  let blob = new Blob([svg], { type: 'image/svg+xml' });
+  let url = URL.createObjectURL(blob);
+  let link = document.createElement('a');
+  link.href = url;
+  link.download = 'radial_automata.svg';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
